@@ -1,0 +1,6 @@
+A_F1_k1.5 prereg window 2024-10-24.. n 895 net 20.3 CI [ 4.3 34.6] top5day share 0.65 trim5 7.5 maxpair 0.22 pairs+ 0.81 @10bp 15.3 [-0.7 29.6] per_mo 35.8
+  $1k/trade total $1821 over 25 mo; maxDD $-335; longest underwater 68 active days
+  trades/active day mean 2.44 p95 6 max 13
+A_F1_k1.5 full 1h history 2023-11-24.. n 1313 net 13.6 CI [ 2.1 24.7] top5day share 0.66 trim5 4.8 maxpair 0.30 pairs+ 0.81 @10bp 8.6 [-2.9 19.7] per_mo 36.5
+B_F2SPY_k1.0 prereg window 2024-10-24.. n 1891 net 7.8 CI [-1.8 17.5] top5day share 0.64 trim5 2.9 maxpair 0.23 pairs+ 0.81 @10bp 2.8 [-6.8 12.5] per_mo 75.6
+B_F2SPY_k1.0 full 1h history 2023-11-24.. n 2850 net 5.1 CI [-1.6 12.5] top5day share 0.65 trim5 1.8 maxpair 0.35 pairs+ 0.69 @10bp 0.1 [-6.6  7.5] per_mo 79.2
