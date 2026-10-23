@@ -17,9 +17,11 @@ def tr_factor(t):
     return d["Adj Close"] / d["Close"], d
 fS, _ = tr_factor("SPY")
 res, alltr = [], []
-for iv in ("1h", "5m"):
+CELLS = [("A_F1_k1.5", "x1", 1.5), ("B_F2SPY_k1.0", "x2SPY", 1.0)] if len(sys.argv) < 4 else [("F1_k1.0", "x1", 1.0), ("F1_k2.0", "x1", 2.0), ("F1_k2.5", "x1", 2.5), ("F1_k1.5_hdg", "x1", 1.5)]
+TAG = "v1" if len(sys.argv) < 4 else "A4"
+for iv in (("1h", "5m") if TAG == "v1" else ("1h",)):
     spm = pm_price("SPY", iv)
-    for cn, sig, k in (("A_F1_k1.5", "x1", 1.5), ("B_F2SPY_k1.0", "x2SPY", 1.0)):
+    for cn, sig, k in CELLS:
         rows = []
         for pr, p in panels.items():
             f, raw = tr_factor(pr)
@@ -37,7 +39,11 @@ for iv in ("1h", "5m"):
             fire = (z.abs() >= k) & x.notna() & p.rH0.notna()
             d = fire[fire].index
             s = -np.sign(x[d])
-            rows.append(pd.DataFrame({"date": d, "pair": pr, "net": (s * p.rH0[d]).values - 5e-4,
+            if cn.endswith("_hdg"):
+                net = (s * (p.rH0[d] - p.bc[d] * p.eH0[d])).values - 5e-4 * (1 + p.bc[d].abs().values)
+            else:
+                net = (s * p.rH0[d]).values - 5e-4
+            rows.append(pd.DataFrame({"date": d, "pair": pr, "net": net,
                                       "pm_vs_open": (s * (p.Ao[d] - ppm[d])).values}))
         tr = pd.concat(rows); tr["iv"] = iv; tr["cell"] = cn; alltr.append(tr)
         for lab, m in (("2024-10-24..2025", (tr.date >= "2024-10-24") & (tr.date <= "2025-12-31")),
@@ -49,4 +55,4 @@ for iv in ("1h", "5m"):
                             pairs_pos=(t2.groupby("pair").net.mean() > 0).mean(), per_mo=len(t2) / (t2.date.dt.to_period("M").nunique()),
                             open_moved_toward_signal_bp=t2.pm_vs_open.mean() * 1e4))
 df = pd.DataFrame(res); pd.set_option("display.width", 220); print(df.round(2).to_string())
-df.to_csv(os.path.join(OUT, "PM_v1.csv"), index=False); pd.concat(alltr).to_csv(os.path.join(OUT, "PM_trades_v1.csv"), index=False)
+df.to_csv(os.path.join(OUT, "PM_%s.csv" % TAG), index=False); pd.concat(alltr).to_csv(os.path.join(OUT, "PM_trades_%s.csv" % TAG), index=False)

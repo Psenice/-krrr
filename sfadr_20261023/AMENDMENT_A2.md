@@ -1,4 +1,4 @@
-# AMENDMENT A2 — execution-delay cell C2169 (written ~12:25 Prague, before any intraday bar is fetched)
+# AMENDMENT A2 — execution-delay cell C2169 (written 11:18 Prague after the grid was scored, before any intraday bar is fetched; label corrected from a guessed "~12:25")
 
 Why: F1/F2 signals use the ADR Open print, which is also the H0 entry price. A trader sees the print only after it happens,
 so part of the H0 edge may be opening-auction bounce that cannot be captured. Daily data cannot answer this.

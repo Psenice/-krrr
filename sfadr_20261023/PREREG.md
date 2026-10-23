@@ -1,6 +1,6 @@
 # PREREG — ccsp2 sfadr_20261023: signal factory on Asian ADRs vs the home-market close
 
-Written 2026-10-23 ~11:20 Prague, before any outcome is computed. Ledger C2160–C2179. All numbers will be backtest.
+Written 2026-10-23 11:09 Prague (mtime), before any outcome is computed. Ledger C2160–C2179. All numbers will be backtest.
 Data on disk (fetched 11:12 Prague, no return computed): yfinance daily OHLC, auto_adjust=False, 2011-06-01 → 2026-10-22,
 16 ADRs + 16 home lines + TWD/HKD/JPY/INR/KRW=X + SPY EWJ EWY FXI EWT INDA.
 

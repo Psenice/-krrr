@@ -1,4 +1,4 @@
-# AMENDMENT A3 — executable pre-market cell C2170 (written ~12:45 Prague, before any pre-market bar is fetched)
+# AMENDMENT A3 — executable pre-market cell C2170 (written ~11:21 Prague after the holdout opened, before any pre-market bar is fetched; label corrected from a guessed "~12:45")
 
 Why: C2169 holdout shows the 2026 F1/F2 edge is earned at the open print (5-min delayed entry ≈ 0). An executable version must
 know its signal before the open: compute it from the last pre-market ADR trade and enter at the official open (market-on-open,
@@ -14,5 +14,5 @@ Windows: pre-holdout 2024-10-24 → 2025-12-31 (1h) decides together with 2026 (
 Rule: EXECUTABLE-SUPPORT if 1h-based net > 0 with the 30-day-block range clear of 0 on 2024-10-24 → 2026-10-22 AND the 2026 part > 0;
 NOT-ESTABLISHED if the range spans 0; KILL if net ≤ 0.
 
-A3b (12:55 Prague, before any C2170 outcome): Yahoo reports Volume 0 on every pre-market bar, so "Volume > 0" removes all days
+A3b (11:22 Prague, before any C2170 outcome): Yahoo reports Volume 0 on every pre-market bar, so "Volume > 0" removes all days
 (the first run returned zero trades). Replaced by: the bar must show a trade range High > Low. Nothing else changed.

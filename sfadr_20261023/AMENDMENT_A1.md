@@ -1,6 +1,6 @@
 # AMENDMENT A1 — after one blind Opus review (REVIEW_v1.md), before any cell is scored
 
-Written ~11:55 Prague 2026-10-23. Base PREREG sha256 45b1f79b…b563. The only outcomes computed before this: the placebo bar
+Written 11:15 Prague 2026-10-23 (file mtime; an earlier label "~11:55" was a guessed clock). Base PREREG sha256 45b1f79b…b563. The only outcomes computed before this: the placebo bar
 (shuffled signals, built on the leaky FX → discarded, rebuilt) and pipeline controls (look-ahead t, random-signal t). No real cell.
 
 MUST-FIX applied:
