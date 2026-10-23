@@ -16,4 +16,4 @@ None needed: no new-venue sleeve for E4 paper. Optional: Bitget-only follow-up i
 Bybit REST geo-blocked (no funding/placebo). OKX funding API keeps ~3 months. Bitget funding history short (not traced). Project files can't be written from the cloud → mirrors are on Drive as `PROJECT_MIRROR_claude_CCE4V_RESULTS_2026-10-23.md` and `PROJECT_MIRROR_sessions_2026-10-23_cce4v.md`; copy them into the Project.
 
 ## Files
-PREREG.md · AMENDMENTS_v1.md · RESULTS.md · LEDGER_ROWS_cce4v_PENDING_v2_final.csv · SCRIPTS_cce4v.md · out_csv (new_scored, new_union, gate_events, depth_books, overlap_agreement). Also in git branch `ccr-d607812d-v6j7g2` of Psenice/-krrr.
+Drive: PREREG.md · AMENDMENTS_v1.md · RESULTS.md · LEDGER_ROWS_cce4v_PENDING_v2_final.csv · HANDOFF_cce4v.md. Scripts, transcribed inputs and output CSVs (new_scored, new_union, gate_events, depth_books, overlap_agreement): GitHub Psenice/-krrr, branch `ccr-d607812d-v6j7g2`, folder `e4venues_20261023/` (raw caches not committed; re-fetch ~40 min).
