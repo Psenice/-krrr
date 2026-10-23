@@ -1,0 +1,35 @@
+POOLED g_next n 46079 slope 0.555 t(date-clustered) 56.0 R2 0.379
+POOLED oc_next n 46079 slope 0.055 t(date-clustered) 5.3 R2 0.003
+    pair        y     n  slope       t     r2
+0    TSM   g_next  3333  0.438  30.252  0.409
+1    TSM  oc_next  3333  0.004   0.341  0.000
+2   BABA   g_next  1440  0.876  49.536  0.714
+3   BABA  oc_next  1440  0.038   1.198  0.002
+4     JD   g_next  1304  0.854  49.398  0.713
+5     JD  oc_next  1304  0.101   2.622  0.013
+6   BIDU   g_next  1121  0.854  33.345  0.742
+7   BIDU  oc_next  1121  0.101   3.036  0.014
+8   NTES   g_next  1309  0.863  45.639  0.670
+9   NTES  oc_next  1309  0.089   2.357  0.009
+10  SONY   g_next  3402  0.864  37.687  0.531
+11  SONY  oc_next  3402 -0.014  -0.594  0.000
+12    TM   g_next  3402  0.782  29.516  0.357
+13    TM  oc_next  3402 -0.009  -0.322  0.000
+14   HMC   g_next  3402  0.825  30.794  0.404
+15   HMC  oc_next  3402  0.051   2.010  0.002
+16  MUFG   g_next  3400  0.716  22.700  0.369
+17  MUFG  oc_next  3400 -0.014  -0.524  0.000
+18  SMFG   g_next  3402  0.635  18.332  0.304
+19  SMFG  oc_next  3402  0.005   0.214  0.000
+20  INFY   g_next  3447  0.361  17.775  0.299
+21  INFY  oc_next  3447  0.092   4.742  0.011
+22   HDB   g_next  3447  0.135  12.763  0.115
+23   HDB  oc_next  3447  0.034   2.508  0.003
+24   IBN   g_next  3447  0.395  21.221  0.304
+25   IBN  oc_next  3447  0.107   3.727  0.009
+26    KB   g_next  3404  0.399  18.841  0.202
+27    KB  oc_next  3404  0.101   3.921  0.007
+28   SHG   g_next  3410  0.379  17.772  0.200
+29   SHG  oc_next  3410  0.074   3.159  0.004
+30   PKX   g_next  3409  0.429  30.903  0.300
+31   PKX  oc_next  3409  0.103   4.318  0.008

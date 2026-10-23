@@ -11,18 +11,28 @@ COST_BP = 5.0; BORROW_YR = 0.005
 HOLDS = {"H0": 0, "H1": 1, "H5": 5}
 KS = [1.0, 1.5, 2.0, 2.5]
 
-def load(d, t):
+def load(d, t, home=False, fx=False):
     df = pd.read_csv(os.path.join(d, t.replace("=", "_") + ".csv"), index_col=0, parse_dates=True)
     df = df[~df.index.duplicated(keep="last")]
-    return df[["Open", "High", "Low", "Close", "Volume"]].replace(0, np.nan)
+    if home:  # A1-2: drop stale holiday rows
+        df = df[df.Volume.fillna(0) > 0]
+    if not fx:  # A1-3: total-return scaling
+        f = df["Adj Close"] / df["Close"]
+        df["Open"] = df.Open * f; df["Close"] = df.Close * f
+    df = df[["Open", "High", "Low", "Close", "Volume"]]
+    df[["Open", "Close"]] = df[["Open", "Close"]].replace(0, np.nan)
+    return df
 
 def roll_sd_lag(x, n=250, mn=60):
     return x.rolling(n, min_periods=mn).std().shift(1)
 
 def roll_beta_lag(y, x, n=250, mn=60):
-    # OLS slope + intercept of y on x over previous n valid obs (both valid), lagged one row
+    # OLS slope + intercept of y on x over previous n valid obs (both valid), lagged one valid obs (A1-5)
     m = y.notna() & x.notna()
-    yy, xx = y.where(m), x.where(m)
+    a, b = _rb(y[m], x[m], n, mn)
+    return a.reindex(y.index), b.reindex(y.index)
+
+def _rb(yy, xx, n, mn):
     mx = xx.rolling(n, min_periods=mn).mean(); my = yy.rolling(n, min_periods=mn).mean()
     cov = (xx * yy).rolling(n, min_periods=mn).mean() - mx * my
     var = (xx * xx).rolling(n, min_periods=mn).mean() - mx * mx
@@ -30,21 +40,26 @@ def roll_beta_lag(y, x, n=250, mn=60):
     return a.shift(1), b.shift(1)
 
 def clean_fx(fx):
+    # A1-1: backward-only median of D-4..D-1
     lf = np.log(fx)
-    nb = pd.concat([lf.shift(k) for k in (-2, -1, 1, 2)], axis=1).median(axis=1)
+    nb = pd.concat([lf.shift(k) for k in (1, 2, 3, 4)], axis=1).median(axis=1)
     return fx.where((lf - nb).abs() <= 0.03)
 
 def build(datadir):
+    global CAL
     spy = load(datadir, "SPY")
+    CAL = spy.index
     out = {}
     for adr, home, fxt, etf in PAIRS:
-        A = load(datadir, adr); Hm = load(datadir, home); FX = load(datadir, fxt); E = load(datadir, etf)
+        A = load(datadir, adr); Hm = load(datadir, home, home=True); FX = load(datadir, fxt, fx=True); E = load(datadir, etf)
         idx = spy.index
         A = A.reindex(idx)
         p = pd.DataFrame(index=idx)
         p["Ao"], p["Ac"] = np.log(A.Open), np.log(A.Close)
         p["Avol"] = A.Close * A.Volume
-        fx = clean_fx(FX.Open).reindex(idx)
+        fxc = clean_fx(FX.Close.dropna())
+        fx = fxc.shift(1).reindex(idx)          # A1-1: previous FX bar's Close
+        fx_now = fxc.reindex(idx)               # FX Close(D): after the US close, reverse report only
         hc = Hm.Close.reindex(idx); ho = Hm.Open.reindex(idx)
         p["H"] = np.log(hc) - np.log(fx)
         raw = p.Ac - p.H
@@ -57,7 +72,8 @@ def build(datadir):
         p["mSPY"] = p.So - p.Sc.shift(1)
         p["mETF"] = p.Eo - p.Ec.shift(1)
         # hedge beta: ADR on ETF close-to-close, rolling 250, lagged
-        _, p["bc"] = roll_beta_lag(p.Ac.diff(), p.Ec.diff(), 250, 60)
+        _, bc = roll_beta_lag(p.Ac.diff(), p.Ec.diff(), 250, 60)
+        p["bc"] = bc.ffill()
         # signals
         p["x1"] = prem
         for nm, m in (("SPY", p.mSPY), ("ETF", p.mETF)):
@@ -73,7 +89,9 @@ def build(datadir):
         hm = pd.DataFrame({"ho": np.log(Hm.Open), "hc": np.log(Hm.Close)}).dropna()
         hm["g_next"] = hm.ho.shift(-1) - hm.hc
         hm["oc_next"] = hm.hc.shift(-1) - hm.ho.shift(-1)
-        p["r_rev"] = (p.Ac - p.H - p.ref).where(prem.notna())
+        p["r_rev"] = (p.Ac - (np.log(hc) - np.log(fx_now)) - p.ref).where(prem.notna())
+        p["Ao_stale"] = (A.Open - A.Close.shift(1)).abs().reindex(idx) < 1e-9
+        p["Eo_stale"] = (E.Open - E.Close.shift(1)).abs().reindex(idx) < 1e-9
         p["g_next"] = hm.g_next.reindex(idx); p["oc_next"] = hm.oc_next.reindex(idx)
         p["pair"] = adr
         out[adr] = p
@@ -120,13 +138,12 @@ def cell_t(tr, lag):
     d = tr.groupby("date").net.mean().sort_index()
     return nw_t(d.values, lag)
 
+CAL = None  # set to the US trading-day index by build()
 def block_ci(tr, block=30, B=2000, seed=0):
     if len(tr) < 5: return (np.nan, np.nan)
     rng = np.random.default_rng(seed)
-    tr = tr.sort_values("date")
-    dates = np.array(sorted(tr.date.unique()))
-    bid = {d: i // block for i, d in enumerate(dates)}
-    tr = tr.assign(b=tr.date.map(bid))
+    pos = pd.Series(np.arange(len(CAL)), index=CAL)
+    tr = tr.assign(b=pos.reindex(tr.date).values // block)
     g = tr.groupby("b").net.agg(["sum", "count"])
     s, c = g["sum"].values, g["count"].values; nb = len(s)
     idx = rng.integers(0, nb, size=(B, nb))

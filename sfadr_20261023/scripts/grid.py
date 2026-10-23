@@ -80,14 +80,20 @@ if MODE == "check":
 if MODE == "placebo":
     rng = np.random.default_rng(12345)
     NR = int(sys.argv[4]) if len(sys.argv) > 4 else 200
+    KIND = sys.argv[5] if len(sys.argv) > 5 else "indep"
     disc = SL["disc"]; res = []
+    dpos = np.where(disc)[0]
     for run in range(NR):
         Xs, Zs = {}, {}
+        perm = dpos[rng.permutation(len(dpos))]  # shared date permutation (A1-7)
         for fam, x in X.items():
             xs = x.copy()
-            for j in range(P):
-                ok = np.where(disc & np.isfinite(x[:, j]))[0]
-                xs[ok, j] = x[rng.permutation(ok), j]
+            if KIND == "shared":
+                xs[dpos, :] = x[perm, :]
+            else:
+                for j in range(P):
+                    ok = np.where(disc & np.isfinite(x[:, j]))[0]
+                    xs[ok, j] = x[rng.permutation(ok), j]
             Xs[fam] = xs; Zs[fam] = zmat(xs)
         best = -np.inf
         for (fam, side, k, h, hed) in CELLS:
@@ -97,7 +103,7 @@ if MODE == "placebo":
         res.append(best)
         if run % 20 == 0: print(run, best, flush=True)
     res = np.array(res)
-    json.dump({"maxt": res.tolist(), "bar95": float(np.percentile(res, 95))}, open(os.path.join(OUT, "placebo_v1.json"), "w"))
+    json.dump({"maxt": res.tolist(), "bar95": float(np.percentile(res, 95))}, open(os.path.join(OUT, "placebo_v2_%s.json" % KIND), "w"))
     print("BAR95", np.percentile(res, 95)); sys.exit()
 
 if MODE == "controls":
@@ -117,7 +123,9 @@ if MODE == "controls":
     sys.exit()
 
 if MODE == "score":
-    bar = json.load(open(os.path.join(OUT, "placebo_v1.json")))["bar95"]
+    bars = [json.load(open(os.path.join(OUT, "placebo_v2_%s.json" % kd)))["bar95"] for kd in ("indep", "shared")]
+    bar = max(bars); print("bars indep/shared", bars)
+    STALE = M("Ao_stale").astype(bool) | M("Eo_stale").astype(bool)
     rows = []
     for c in CELLS:
         fam, side, k, h, hed = c
@@ -129,13 +137,57 @@ if MODE == "score":
         rows.append(row)
     df = pd.DataFrame(rows)
     df["surv"] = (df.disc_t >= bar) & (df.disc_net > 0) & (df.disc_share_pos >= 0.6) & (df.disc_per_yr >= 50)
-    df.to_csv(os.path.join(OUT, "GRID_v1.csv"), index=False)
+    df["F"] = df.fam.str[:2]
+    def verdict(r):
+        if not r.new_n or r.new_n == 0 or not np.isfinite(r.new_net): return "NO-TRADES"
+        if r.new_net <= 0: return "KILL"
+        if r.new_lo <= 0: return "NOT-EST"
+        nb = df[(df.fam == r.fam) & (df.side == r.side) & (df.hold == r.hold) & (df.hedge == r.hedge) & ((df.k - r.k).abs() == 0.5)]
+        ok = (r.new_trim5 > 0) and (r.new_maxshare <= 0.5) and (nb.new_net > 0).any()
+        return "SUPPORT" if ok else "NOT-EST(checks)"
+    df["new_verdict"] = df.apply(verdict, axis=1)
+    df.to_csv(os.path.join(OUT, "GRID_v2.csv"), index=False)
     print("bar", bar, "survivors", int(df.surv.sum()))
     pd.set_option("display.width", 250); pd.set_option("display.max_columns", 40)
     cols = ["fam", "side", "k", "hold", "hedge", "disc_n", "disc_net", "disc_t", "disc_share_pos", "disc_per_yr",
             "mid_net", "new_n", "new_net", "new_lo", "new_hi", "new_t", "surv"]
     print(df.sort_values("disc_t", ascending=False)[cols].head(25).round(2).to_string())
-    for fam in SIGS:
-        b = df[df.fam == fam].sort_values("disc_t", ascending=False).iloc[0]
-        print("BEST", fam, b[cols].round(2).to_dict())
+    best = {}
+    for F in ("F1", "F2", "F3"):
+        b = df[df.F == F].sort_values("disc_t", ascending=False).iloc[0]; best[F] = b
+        print("BEST", F, b[cols + ["new_trim5", "new_maxshare", "new_share_pos", "new_per_mo", "new_verdict"]].to_dict())
+    for i, r in df[df.surv].iterrows(): best["S%d" % i] = r
+    det = {}
+    for nm, b in best.items():
+        fam, side, k, h, hed = b.fam, int(b.side), b.k, b.hold, b.hedge
+        d = {}
+        for lab, extra in (("all", None), ("ex_stale_open", ~STALE)):
+            for sl in ("disc", "mid", "new"):
+                m = SL[sl]
+                fire, net = cell_trades(X[fam], Z[fam], fam, side, k, h, hed, m)
+                if extra is not None: fire = fire & extra
+                tr = to_df(fire, net)
+                s = E.summarize(tr, E.HOLDS[h], YEARS[sl])
+                s["t_lag2h"] = E.cell_t(tr, 2 * E.HOLDS[h]) if len(tr) else np.nan
+                d[lab + "_" + sl] = {kk: round(float(v), 2) for kk, v in s.items()}
+        fire, net = cell_trades(X[fam], Z[fam], fam, side, k, h, hed, (yr >= 2012) & (yr <= 2025))
+        tr = to_df(fire, net); yy = tr.groupby(tr.date.dt.year).net.agg(["count", "mean"]); yy["mean"] *= 1e4
+        d["yearly"] = yy.round(1).to_dict()
+        det[nm] = dict(cell=[fam, side, k, h, hed], **d)
+        print(nm, json.dumps(det[nm]))
+    json.dump(det, open(os.path.join(OUT, "BEST_v2.json"), "w"), indent=1, default=float)
     sys.exit()
+
+if MODE == "holdout":
+    df = pd.read_csv(os.path.join(OUT, "GRID_v2.csv"))
+    rows = []
+    for i, r in df[df.surv].iterrows():
+        fire, net = cell_trades(X[r.fam], Z[r.fam], r.fam, int(r.side), r.k, r.hold, r.hedge, SL["hold"])
+        tr = to_df(fire, net)
+        s = E.summarize(tr, E.HOLDS[r.hold], YEARS["hold"])
+        rows.append(dict(i=i, fam=r.fam, side=r.side, k=r.k, hold=r.hold, hedge=r.hedge, new_net=r.new_net,
+                         new_verdict=r.new_verdict, **{"hold_" + kk: vv for kk, vv in s.items()}))
+    h = pd.DataFrame(rows); h.to_csv(os.path.join(OUT, "HOLDOUT_v1.csv"), index=False)
+    pd.set_option("display.width", 250)
+    print(h[["i","fam","side","k","hold","hedge","new_net","new_verdict","hold_n","hold_net","hold_lo","hold_hi","hold_share_pos","hold_per_mo"]].round(2).to_string())
+    print("holdout net>0:", (h.hold_net > 0).sum(), "of", len(h), "| SUPPORT cells net>0:", (h[h.new_verdict == "SUPPORT"].hold_net > 0).sum(), "of", (h.new_verdict == "SUPPORT").sum())
