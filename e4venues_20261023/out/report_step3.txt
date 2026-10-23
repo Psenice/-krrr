@@ -1,0 +1,13 @@
+C2211 pooled 2026 N168: n 96 mean +749 [+197, +1284] (cond1 True); NEW-layer 2026 N168 n 14 +21 [-2102, +1829] (cond2 True); NEW excess all years +755 (cond3 True) -> PASS
+   pooled all 2025-01..2026-10-15: n 258 +751 [+336, +1144]; by layer {'Aster': {'size': 65, 'mean': 751.0}, 'HL': {'size': 126, 'mean': 1042.0}, 'NEW_bitget': {'size': 1, 'mean': 62.0}, 'NEW_gate': {'size': 66, 'mean': 204.0}}
+   pooled 2025: n 162 +751 [+205, +1302]; by layer {'Aster': {'size': 18, 'mean': 1147.0}, 'HL': {'size': 91, 'mean': 965.0}, 'NEW_gate': {'size': 53, 'mean': 250.0}}
+   pooled 2026: n 96 +749 [+197, +1284]; by layer {'Aster': {'size': 47, 'mean': 599.0}, 'HL': {'size': 35, 'mean': 1243.0}, 'NEW_bitget': {'size': 1, 'mean': 62.0}, 'NEW_gate': {'size': 13, 'mean': 18.0}}
+   reference HL+Aster only 2026: n 82 +874 [+273, +1466]
+C2212 2025: NEW with N168 4.42/month; NEW union (any scored) 6.17/month; HL+Aster 9.08/month; pooled 13.50/month
+C2212 2026: NEW with N168 1.48/month; NEW union (any scored) 1.80/month; HL+Aster 8.67/month; pooled 10.15/month
+C2213 NEW-event $ fillable at <=29 bp one-way (today's books, last 10 coins per venue): median 13,579 (by venue {'bitget': 43116.0, 'gate': 2324.0, 'okx': 20976.0}); HL/Aster use NightA factors
+C2214 pooled 2026 book at 1x per $100: $17.47/month, worst DD $61.1; at $25 DD: $7.15/month (k 0.41); taken 71 of 96
+C2214 HL+Aster only 2026 book at 1x per $100: $17.43/month, worst DD $61.1; at $25 DD: $7.13/month (k 0.41); taken 66 of 82
+C2214 $1,000: pooled $165/month (DD $575) vs HL+Aster $164/month; after live third pooled $110
+C2214 $5,000: pooled $850/month (DD $2,965) vs HL+Aster $846/month; after live third pooled $567
+C2214 $25,000: pooled $2,651/month (DD $8,558) vs HL+Aster $2,441/month; after live third pooled $1,768

@@ -1,0 +1,11 @@
+census notices 325; not on HL/Aster at T: 161
+status of those notices per venue: {'bitget': {'D': 14, 'L': 25, 'N': 65, 'S': 57, 'S_delisted': 0}, 'bybit': {'D': 4, 'L': 30, 'N': 39, 'S': 84, 'S_delisted': 4}, 'gate': {'D': 7, 'L': 28, 'N': 49, 'S': 77, 'S_delisted': 0}, 'okx': {'D': 5, 'L': 23, 'N': 107, 'S': 26, 'S_delisted': 0}}
+C2200 okx: NEW 26 (2025 19, 2026 7) | OVERLAP 117 (HL 83/126, Aster 34/66)
+C2200 bitget: NEW 57 (2025 49, 2026 8) | OVERLAP 154 (HL 99/126, Aster 55/66)
+C2200 gate: NEW 75 (2025 60, 2026 15) | OVERLAP 169 (HL 109/126, Aster 60/66)
+C2200 bybit: NEW 82 (2025 72, 2026 10) | OVERLAP 169 (HL 116/126, Aster 53/66)
+C2201 NEW union (any venue): 100 events, 78 coins (2025 81, 2026 19); dup-with-HL/Aster removed: 0
+NEW venue combos: {'bitget+bybit+gate': 31, 'bitget+bybit+gate+okx': 21, 'bybit': 20, 'gate': 13, 'bybit+gate': 7, 'bitget+bybit': 2, 'gate+okx': 2, 'bitget': 1, 'bitget+bybit+okx': 1, 'bitget+gate+okx': 1, 'okx': 1}
+Bybit-only NEW events: 20 [('A8', 1736822966000), ('ACX', 1742620399000), ('AVL', 1741312784000), ('B3', 1748400546000), ('B3', 1758701401000), ('B3', 1778125800000), ('BARD', 1758189006000), ('CUDIS', 1758872996000), ('EPT', 1746670665000), ('EPT', 1749530470000), ('GNO', 1739930221000), ('IP', 1739238989000), ('MMT', 1762248900000), ('PEAQ', 1735782441000), ('PUMP', 1745299802000), ('SAHARA', 1750905604000), ('SD', 1756189292000), ('XION', 1764124339000), ('XTER', 1748485618000), ('ZRC', 1736738350000)]
+S but within 24h of an HL/Aster event (excluded): 2
+notices not on HL/Aster with no S venue: 56 (of which any D: 19)
