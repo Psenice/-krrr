@@ -19,6 +19,8 @@ for n in "SMCI MSTR RIVN LCID NIO MARA RIOT BB CVNA AFRM IONQ RKLB SOUN PTON PLU
 for n in "GME AMC UPST AI DJT".split(): BORROW[n] = 0.20
 SPY_BORROW = 0.003
 MIN_PRICE = 3.0      # unadjusted prior close, dollars
+# A1 data gate: the company article lived under an uncovered title before these dates (60-day median step >= 10x)
+TRUNC = {"META": "2020-02-01", "SMCI": "2017-11-01", "MARA": "2025-02-01", "PTON": "2022-04-01"}
 
 
 def load_prices(d="data"):
@@ -66,6 +68,7 @@ def load_views(d="data/wiki_raw"):
         tot = tot.reindex(full)
         first = tot[tot > 0].index.min()
         tot[tot.index < first] = np.nan
+        if t in TRUNC: tot[tot.index < pd.Timestamp(TRUNC[t])] = np.nan   # A1 data gate
         S[t] = tot
     return pd.DataFrame(S)
 
