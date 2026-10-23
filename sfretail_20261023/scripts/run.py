@@ -128,15 +128,22 @@ def main(mode):
         return
     if mode == "holdout":
         if os.path.exists("out/HOLDOUT_OPENED"): sys.exit("holdout already opened")
-        open("out/HOLDOUT_OPENED", "w").write(pd.Timestamp.now(tz="UTC").isoformat())
+        if not os.path.exists("out/dev_v1.csv"): sys.exit("A2: development verdicts must exist first")
+        dev = pd.read_csv("out/dev_v1.csv").set_index("cell")
         o = all_cells(P, V=Vg, OS=os_signal(P))
         res = []
         for c, tr in o.items():
             d = split(tr, "hold"); d = d[d["exit"] <= pd.Timestamp("2026-10-22")]
             s = summarize(d); s["cell"] = c; s["t"] = nw_t(d, hold_of(c)) if len(d) else np.nan
+            vd = dev.loc[c, "verdict_dev"]; s["verdict_dev"] = vd
+            if vd != "SURVIVOR": s["verdict_final"] = vd
+            elif not (s.get("mean", -1) > 0): s["verdict_final"] = "KILL"
+            elif s.get("lo", -1) > 0 and not (s.get("top5_share", 0) >= 1.0) and dev.loc[c, "top5_share"] < 1.0: s["verdict_final"] = "SUPPORT"
+            else: s["verdict_final"] = "NOT-ESTABLISHED"
             res.append(s)
         pd.DataFrame(res).to_csv("out/holdout_v1.csv", index=False)
-        print(pd.DataFrame(res)[["cell", "n", "mean", "gross", "lo", "hi", "per_month", "frac_names_pos"]].round(2).to_string())
+        open("out/HOLDOUT_OPENED", "w").write(pd.Timestamp.now(tz="UTC").isoformat())   # A2: lock after a successful compute
+        print(pd.DataFrame(res)[["cell", "n", "mean", "gross", "lo", "hi", "t", "per_month", "frac_names_pos", "verdict_dev", "verdict_final"]].round(2).to_string())
 
 
 DROP = ["RIOT", "AI"]   # A1 data gate: no usable article (RIOT) / two uncovered moves (AI)
